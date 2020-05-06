@@ -318,32 +318,6 @@ def solve(fuel_cost, Vessels, Insts, Times, Voys, instSetting, Name):
             , "PSV capacity: v" + str(v))
 
 
-    
-    # --------------- Spread of arrivals ---------------
-    
-    if data.spreadTime > 0:
-    
-        model.addConstrs((
-                
-                gp.quicksum(
-                        
-                        x[v,i,t,j,tau]
-                        
-                        for v in Vessels
-                        for i in Insts
-                        for t in departure_times[v][i][j]
-                        for tau in specific_arrival_times[v][i][t][j]
-                        if t2 - tau <= data.spreadTime
-                        if tau - t2 <= 0)
-                
-                <= 1
-                
-                for j in Insts
-                for t2 in Times)
-                
-                , "Spread of arrivals:")
-
-
     # =============== MODEL UPDATE ===============
 
     model.update()
@@ -378,25 +352,12 @@ def solve(fuel_cost, Vessels, Insts, Times, Voys, instSetting, Name):
     model.optimize()
     
     model.printAttr('x')
+
+    model.printQuality()
+
+    model.printStats()
     
-    
-    solEdges = [[[[[0 for tau in Times]for j in Insts]for t in Times]for i in Insts]for v in Vessels]
-    
-    for a in model.getVars():
-        if a.varName[0] == 'x' and a.x == 1:
-            temp = a.varName.split('_')
-            solEdges[int(temp[1])][int(temp[3])][int(temp[4])][int(temp[5])][int(temp[6])] = 1
-    
-    
-    tot = 0
-    for v in Vessels:
-        for i in Insts:
-            for t in Times:
-                for j in Insts:
-                    for tau in Times:
-                        tot += solEdges[v][i][t][j][tau]*fuel_cost[v][i][t][j][tau]
-                        
-    print(tot)
-    
+
+
     #plotSol.draw_routes(solEdges, fuel _cost)
 

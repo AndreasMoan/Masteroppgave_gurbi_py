@@ -14,7 +14,7 @@ class model:
     def __init__(self, nInsts, nVessels, nSpot, nVoys, nTimes, instSetting, weatherSetting):
         
         self.ClosingInsts   = d.ClosingInsts[instSetting]
-        self.Distance       = d.Distance[instSetting]
+        self.Distance       = d.Distance
         self.Weather        = d.Weather[weatherSetting]
         self.LayTime        = d.LayTime[instSetting]
         self.AvaliableTime  = d.AvaliableTime[:nVessels + nSpot]
@@ -69,7 +69,7 @@ class model:
 #       ------------------------------------------------------------
         
         print("Plotting graph....")
-        plot.draw_routes(self.fuel_cost,self.Insts,self.Times,self.Vessels)
+        # plot.draw_routes(self.fuel_cost,self.Insts,self.Times,self.Vessels)
         
         print("-------------- OPTIMIZING MODEL ----------------\n")
         
@@ -156,7 +156,8 @@ class model:
                             else:
                                self.add_arc(vessel, inst1, inst2, time1, time1 + loadingTime, time2, time2, time2 + self.LayTime[inst2] + d.ServiceImpact[self.Weather[time2]]) 
                                
-    
+    def get_distance_between_installations(self, installation_1, installation_2):
+        return self.Distance[installation_1][installation_2]
 
    
     # ------------------ Adding arcs to the model ------------------
