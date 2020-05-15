@@ -2,9 +2,6 @@ import gurobipy as gp
 import data
 
 
-#import plotSol
-#import numpy as np
-#import time
 
 def solve(fuel_cost, Vessels, Insts, Times, Voys, instSetting, Name):
 

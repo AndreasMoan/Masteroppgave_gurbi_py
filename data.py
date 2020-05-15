@@ -7,8 +7,46 @@ Created on Mon Nov 11 11:01:49 2019
 
 # =============================== DATA ===============================
 
-
 # ---------------------------- Installations ----------------------------
+
+class Installation:
+    def __init__(self, name, opening_hour, closing_hour, number):
+        self.name = name
+        self.opening_hour = opening_hour
+        self.closing_hour = closing_hour
+        self.number = number
+
+installations = []
+
+installations.append(Installation("DEP", 0,23, 0))
+installations.append(Installation("TRO", 7,19, 1))
+installations.append(Installation("TRB", 7,19, 2))
+installations.append(Installation("TRC", 7,19, 3))
+installations.append(Installation("CPR", 0,23, 4))
+installations.append(Installation("SEN", 0,23, 5))
+installations.append(Installation("SDO", 0,23, 6))
+installations.append(Installation("SEQ", 0,23, 7))
+installations.append(Installation("OSE", 0,23, 8))
+installations.append(Installation("OSB", 0,23, 9))
+installations.append(Installation("OSC", 0,23, 10))
+installations.append(Installation("OSO", 0,23, 11))
+installations.append(Installation("SSC", 0,23, 12))
+installations.append(Installation("OSS", 0,23, 13))
+installations.append(Installation("DSD", 0,23, 14))
+installations.append(Installation("KVB", 0,23, 15))
+installations.append(Installation("VMO", 0,23, 16))
+installations.append(Installation("WEL", 0,23, 17))
+installations.append(Installation("VFB", 0,23, 18))
+installations.append(Installation("WEP", 0,23, 19))
+installations.append(Installation("HUL", 0,23, 20))
+installations.append(Installation("STA", 7,19, 21))
+installations.append(Installation("STB", 0,23, 22))
+installations.append(Installation("STC", 0,23, 23))
+installations.append(Installation("GFA", 0,23, 24))
+installations.append(Installation("GFB", 0,23, 25))
+installations.append(Installation("GFC", 0,23, 26))
+installations.append(Installation("SOD", 0,23, 27))
+
 
 #InstNames = ['TRO', 'TRB', 'TRC', 'CPR', 'SEN', 'SDO', 'SEQ', 'OSE', 'OSB', 'OSC', 'OSO', 'SSC', 'OSS', 'DSD', 'KVB', 'VMO', 'WEL', 'VFB', 'WEP', 'HUL', 'STA', 'STB', 'STC', 'GFA', 'GFB', 'GFC', 'SOD']
 
@@ -20,7 +58,6 @@ Created on Mon Nov 11 11:01:49 2019
 #        | 2 - Random enumeration             |
 #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Insts = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 
 #Insts_sequence_0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 #Insts_sequence_1 = [0, 1, 24, 8, 18, 3, 21, 14, 27, 20, 4, 15, 2, 13, 25, 22, 10, 6, 23, 11, 5, 26, 7, 9, 12, 16, 17, 19]
@@ -56,47 +93,50 @@ Distance =  [[0.00, 43.47, 47.25, 43.76, 44.47, 44.65, 43.21, 41.73, 71.65, 71.6
               [85.01, 54.09, 44.19, 43.21, 47.86, 40.93, 44.57, 44.79, 46.17, 46.17, 38.90, 35.69, 35.69, 51.58, 68.13, 10.27, 9.83, 9.83, 31.04, 23.76, 23.76, 12.52, 13.03, 11.99, 3.17, 2.03, 0.00, 48.28], 
               [37.67, 15.85, 11.98, 6.26, 11.26, 7.36, 6.32, 4.14, 38.54, 38.54, 35.46, 28.46, 28.46, 43.35, 60.40, 39.52, 43.68, 43.68, 27.89, 34.06, 34.06, 60.72, 60.62, 60.22, 50.13, 50.18, 48.28, 0.00]]
 
-
-
-
-ClosingInsts =  [[0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 
-                 [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]]
-
-DemandNum = [[0, 2, 1, 2, 4, 4, 4, 4, 3, 4, 3, 4, 4, 4, 3, 5, 1, 3, 1, 2, 1, 3, 3, 3, 3, 3, 3, 3], 
-             [0, 2, 3, 3, 1, 2, 3, 3, 3, 1, 4, 5, 1, 4, 3, 3, 3, 4, 3, 4, 4, 3, 4, 4, 4, 1, 3, 2],
-             [0, 4, 1, 1, 2, 4, 3, 4, 4, 5, 3, 4, 3, 3, 3, 3, 4, 3, 4, 3, 1, 1, 3, 3, 2, 3, 4, 2]]
-
-LayTime = [[0, 3, 4, 3, 4, 4, 4, 4, 3, 3, 3, 3, 2, 3, 4, 2, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3], 
-           [0, 3, 3, 3, 3, 3, 3, 4, 3, 2, 4, 2, 4, 3, 3, 3, 3, 4, 3, 3, 4, 3, 4, 3, 2, 3, 3, 3],
-           [0, 3, 3, 3, 3, 4, 3, 3, 3, 2, 3, 2, 3, 3, 3, 3, 4, 3, 4, 3, 2, 4, 3, 3, 3, 4, 4, 3]]
-
-Demand = [[0, 75, 100, 75, 100, 100, 100, 100, 75, 75, 75, 75, 37.5, 75, 100, 50, 75, 75, 75, 75, 50, 87.5, 87.5, 87.5, 87.5, 87.5, 87.5, 75],
-          [0, 75, 87.5, 75, 75, 75, 87.5, 100, 50, 100, 50, 100, 75, 87.5, 87.5, 75, 100, 87.5, 75, 100, 87.5, 100, 75, 37.5, 75, 75, 75, 75],
-          [0, 75, 75, 75, 75, 100, 87.5, 75, 75, 50, 87.5, 37.5, 87.5, 75, 87.5, 87.5, 100, 75, 100, 87.5, 50, 100, 75, 75, 75, 100, 100, 75]]
-
-spreadTime = 6
+def get_distance_between_installation_number(first_order_number, second_order_number):
+    return Distance(first_order_number, second_order_number)
 
 class Order:
     def __init__(self, demand, departure_day, installation_number, order_number, deadline):
         self.demand = demand
         self.departure_day = departure_day
         self.installation_number = installation_number
-        self.order_number = order_number
+        self.number = order_number
         self.deadline = deadline
 
-o1 = Order()
+orders = []
+
+orders.append(Order(17, 0, installations[4], 1, 3))
+orders.append(Order(11, 0, installations[16], 2, 3))
+orders.append(Order(28, 0, installations[11], 3, 3))
+orders.append(Order(5, 0, installations[17], 4, 3))
+orders.append(Order(30, 0, installations[20], 5, 3))
+orders.append(Order(14, 0, installations[21], 6, 3))
+orders.append(Order(18, 0, installations[26], 7, 3))
+orders.append(Order(22, 0, installations[9], 8, 3))
+orders.append(Order(15, 0, installations[1], 9, 3))
+orders.append(Order(18, 0, installations[2], 10, 3))
+orders.append(Order(19, 0, installations[3], 11, 3))
+orders.append(Order(20, 0, installations[22], 12, 3))
+orders.append(Order(26, 0, installations[12], 13, 3))
+orders.append(Order(4, 0, installations[13], 14, 3))
+orders.append(Order(20, 0, installations[18], 15, 3))
+orders.append(Order(8, 0, installations[15], 16, 3))
 
 
 # ---------------------------- Vessels ----------------------------
 
-Vessels = [0, 1, 2, 3, 4, 5]
+class Vessel:
+    def __init__(self, number, return_day, capacity):
+        self.number = number
+        self.return_day = return_day;
+        self.capacity = capacity;
 
-AvaliableTime = [0, 24, 48, 0, 24, 48]
+vessels = []
 
-VesselCap = [600, 600, 600, 600, 600, 600]
-
-Voys = [0, 1, 2, 3]
+vessels.append(Vessel(0, 3, 100))
+vessels.append(Vessel(0, 3, 100))
+vessels.append(Vessel(0, 3, 100))
 
 
 #Times
@@ -113,57 +153,40 @@ Times = [0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12,  13,  14,  15,  1
 #       | W[2] = Summer breeze ( bad weather rolling in but platforms still servicable )    |
 #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Weather = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
-
-           [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
-            
-           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-            2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]]
+Weather = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
 
 SpeedImpact = [0, 0, 2, 3]
 
-ServiceImpact = [0, 1, 1, 1]
+ServiceImpact = [0, 1.2, 1.3, 2]
 
 # ---------------------------- SingleParameters ----------------------------
 
-fuelPrice = 7.1
+fuel_price = 7.1
 
-maxSpeed = 14
+max_speed = 14
 
-minSpeed = 8
+min_speed = 7
 
-sailingFuelConsume = 340
+fuel_consumption_sailing = 340
 
-dpFuelConsume = 170
+fuel_consumption_DP = 170
 
-idleFuelConsume = 120
-
-depConsumption = 45
+fuel_consumption_idling = 120
 
 spotHourRate = 5653
+
+time_spent_per_demand_unit = 0.1
+
+# ---------------------------- Precision ----------------------------
+
+number_of_time_periods_per_hour = 4
+
+# ---------------------------- Functions ----------------------------
+
+def get_weather_impact(real_time):
+    weather_state = get_weather_state(real_time)
+    ServiceImpact[weather_state]
+
+def get_weather_state(real_time):
+    return Weather[floor(time)]
+

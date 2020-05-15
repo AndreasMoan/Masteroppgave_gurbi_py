@@ -7,59 +7,27 @@ import plot
 
 #import plot
 
-class model:
+class Model:
     
     # ================== INITIALIZATION ==================
     
-    def __init__(self, nInsts, nVessels, nSpot, nVoys, nTimes, instSetting, weatherSetting):
-        
-        self.ClosingInsts   = d.ClosingInsts[instSetting]
-        self.Distance       = d.Distance
-        self.Weather        = d.Weather[weatherSetting]
-        self.LayTime        = d.LayTime[instSetting]
-        self.AvaliableTime  = d.AvaliableTime[:nVessels + nSpot]
-        
-        self.Vessels        = d.Vessels[:nVessels + nSpot]
-        self.Insts          = d.Insts[:nInsts]
-        self.Voys           = d.Voys[:nVoys]
-        
-        for vessel in self.Vessels[nVessels:]:
-            self.AvaliableTime[vessel] = 0
-        
-        max_waiting_time = max(self.AvaliableTime)
-        
-        self.Times          = d.Times[:nTimes+max_waiting_time + 1]
-        
-        self.nTimes         = nTimes
-        self.nInsts         = nInsts
-        self.nVessels       = nVessels
-        self.nVoys          = nVoys
-        self.nSpot          = nSpot
-        
-        self.instSetting    = instSetting
-        self.weatherSetting = weatherSetting
-        
-        self.name           = "Instance-i"+str(self.nInsts)+"-v"+str(self.nVessels)+"-s"+str(self.nSpot)+"-t"+str(self.nTimes)+"-m"+str(self.nVoys)+"-is"+str(self.instSetting)+"-ws"+str(self.weatherSetting)
-        
-        self.fuel_cost      = [[[[[0 for tau in self.Times]for inst2 in self.Insts]for t in self.Times]for inst1 in self.Insts]for v in self.Vessels]
-        
+    def __init__(self):
+        self.multiplier = d.number_of_time_periods_per_hour
+        self.nodes = {}
+        for vessel in d.vessels:
+            self.nodes[vessel.number, 16, 0] = True
         self.run_model()
+
 
 
 
     # ================== RUNNING THE MODEL ==================
     
     def run_model(self):
+
+
         
-        
-        
-        print("\n"+self.name+"\n\n================== INITIALIZING MODEL ==================\n")
-        print("Model Settings:")
-        print("Number of Installations: " + str(self.nInsts))
-        print("Number of Vessels:       " + str(self.nVessels))
-        print("Number of Time periods:  " + str(self.nTimes))
-        print("Installation set used:   " + str(self.instSetting))
-        print("Weather settings used:   " + str(self.weatherSetting) + "\n")
+        print("\n\n================== INITIALIZING MODEL ==================\n")
         self.build_model()
         print("\nNetwork generation successful!")
         print("------------------------------------------------")
@@ -86,171 +54,224 @@ class model:
         
         
     # ================== BUILDING THE NETWORK ==================
+
     
     # ------------------ Deciding what nodes to sail from ------------------
     
-    def build_model(self):
+    def build_model(self): #TODO fix so that arcs are created to and from depot aswell
 
-        for vessel in self.Vessels:
+        for vessel in d.vessels:
             
-            for time1 in range(self.AvaliableTime[vessel],self.AvaliableTime[vessel]+self.nTimes +1,1):
+            for time in range(16*self.multiplier, vessel.return_day*24*self.multiplier):
                 
-                for inst1 in self.Insts: 
-                    
-                    if inst1 == 0:
-                        
-                        if time1 % 24 == 0 and time1 <= self.nTimes - 24 + self.AvaliableTime[vessel]:
-                            self.build_arcs(vessel, time1, inst1, 8)
-                            
-                    else: 
-                        for tempinst in self.Insts:
-                            
-                            for temptime in self.Times:
-                                
-                                if self.fuel_cost[vessel][tempinst][temptime][inst1][time1] != 0:
-                                    self.build_arcs(vessel, time1, inst1, 0)
-                                    break
-                            else:
-                                continue
-                            break
+                for order in d.orders:
+
+                    try:
+                        if self.nodes[vessel.number, time, order.number]:
+                            print("yiiiHaaa")
+                            self.build_arcs(vessel.number, time, order)
+                    except:
+                        print("NOpe")
+                        continue
         
     
     
     
     # ------------------ Deciding what nodes to sail to ------------------
     
-    def build_arcs(self, vessel, time1, inst1, loadingTime):
+    def build_arcs(self, vessel_number, start_node_time, departure_order):
         
-        for inst2 in self.Insts: 
+        for destination_order in d.orders:
             
-            if inst2 != inst1: 
-                
-                tMin = loadingTime + time1
-                distanceLeft = self.Distance[inst1][inst2]
-                while distanceLeft > 0:
-                    distanceLeft -= (d.maxSpeed - d.SpeedImpact[self.Weather[tMin]])
-                    tMin += 1
-                
-                tMax = min((math.ceil(self.Distance[inst1][inst2]/d.minSpeed) + loadingTime + time1),self.nTimes + self.AvaliableTime[vessel])
-                
-                for time2 in range(tMin, tMax+1):
-                    
-                    if ((self.service_possible(inst2, time2)) == False) and (time2 == tMax): 
-                        
-                        if inst2 == 0: 
-                            self.add_arc(vessel, inst1, inst2, time1, time1, time2, time2, time2)
-                            
-                        else:
-                            
-                            time3 = time2
-                            while (self.service_possible(inst2, time3)) == False and time3 < self.nTimes + self.AvaliableTime[vessel]-1:
-                                time3 += 1 
-                                
-                            self.add_arc(vessel, inst1, inst2, time1, time1+ loadingTime, time2, time3, time3 + self.LayTime[inst2] + d.ServiceImpact[self.Weather[time3]])
-                            
-                    elif self.service_possible(inst2, time2) == True: 
-                            
-                            if inst2 == 0:
-                                self.add_arc(vessel, inst1, inst2, time1, time1, time2, time2, time2)
-                                
-                            else:
-                               self.add_arc(vessel, inst1, inst2, time1, time1 + loadingTime, time2, time2, time2 + self.LayTime[inst2] + d.ServiceImpact[self.Weather[time2]]) 
-                               
-    def get_distance_between_installations(self, installation_1, installation_2):
-        return self.Distance[installation_1][installation_2]
+            if destination_order != departure_order:
+
+                departure_installation_number = departure_order.installation_number
+                destination_installation_number = destination_order.installation_number
+
+                distance = d.get_distance_between_installation_number(departure_installation_number, destination_installation_number)
+
+                real_start_time = self.convert_from_node_time_to_real_time(start_node_time)
+
+                earliest_theoretical_end_time = start_node_time + ceil(distance/d.max_speed + destination_order.demand * d.time_spent_per_demand_unit * self.multiplier)
+                latest_theoretical_end_time = start_node_time +  ceil(distance/d.min_speed + destination_order.demand * d.time_spent_per_demand_unit * self.multiplier)
+
+                fin_servicing_time = earliest_theoretical_end_time
+
+                while fin_servicing_time <= latest_theoretical_end_time:
+
+                    fin_servicing_time = self.get_earliest_feasible_fin_servicing_time(fin_servicing_time, destination_order, 0)
+
+                    servicing_consumption, real_fin_idling_time = self.servicing_calculations(fin_servicing_time, destination_order)
+
+                    if self.is_arrival_possible(real_start_time, distance, real_fin_idling_time) != True:
+                        fin_servicing_time += 1
+                        continue
+
+                    idling_consumption, real_fin_sailing_time = self.idling_calculatiuons(real_start_time, distance, real_fin_idling_time)
+
+                    time_in_all_weather_states = self.get_time_in_all_WS(real_start_time, real_fin_sailing_time)
+
+                    adjusted_average_speed = self.calculate_adjusted_average_speed(time_in_all_weather_states, distance)
+
+                    sailing_consumption = self.sailing_calculations(time_in_all_weather_states, adjusted_average_speed)
+
+                    self.add_arc(vessel_number, departure_order.number, destination_order.number, start_node_time, fin_servicing_time, sailing_consumption, idling_consumption, servicing_consumption)
+
+                    fin_servicing_time += 1
 
    
     # ------------------ Adding arcs to the model ------------------
     
-    def add_arc(self, vessel, fromInst, toInst, startTime, depTime, arrTime, serStartTime, finTime):
+    def add_arc(self, vessel, departure_order, destination_order, start_node_time, finish_node_time, sailing_consumption, idling_consumption, servicing_consumption):
             
-        if self.time_to_return(vessel, toInst, finTime):
+        if finish_node_time < vessel.return_day * 24 * self.multiplier:
 
-            self.fuel_cost[vessel][fromInst][startTime][toInst][finTime] = (
-                    self.depot_consumption(depTime - startTime)
-                    + self.sail_consumption(fromInst, toInst, depTime, arrTime, serStartTime)
-                    + self.idle_consumption(arrTime, serStartTime)
-                    + self.dp_consumption(serStartTime, toInst)
-                    + self.spot_price(vessel, startTime, finTime))
+            self.nodes[vessel.number, start_node_time, departure_order] = True
+
+            self.fuel_cost[vessel][departure_order][start_node_time][destination_order][finish_node_time] = ((sailing_consumption + idling_consumption + servicing_consumption)*d.fuel_price)
 
     
     # ================== HELPING FUNCTIONS ==================    
-    
-    # ------------------ Check weather or not service can be performed ------------------
-        
-    def service_possible(self, inst, time):
-        if (inst != 0 and self.Weather[time] == 3) or ((self.ClosingInsts[inst] == True) and ((time % 24 < 22) and (time % 24 >= 12))) or ((inst == 0) and (time % 24 != 0)):
-            return False
-        else:
-            return True
-        
-        
-    # ------------------ Check weather or not vessel will have time to return to supply depot after visiting installation ------------------
-    
-    def time_to_return(self, vessel, inst, time):
-        
-        t = time
-        distanceLeft = self.Distance[inst][0]
-        while distanceLeft > 0:
-            distanceLeft -= (d.maxSpeed - d.SpeedImpact[self.Weather[t]])
-            t += 1
-            
-        if t <= self.AvaliableTime[vessel] + self.nTimes:
-            return True
-        else:
-            return False
-    
-    # ------------------ Fuel consumption while at supply depot ------------------
-    
-    def depot_consumption(self, loadingTime):
-        return loadingTime * d.depConsumption * d.fuelPrice
-        
-    
-    
-    # ------------------ Consumption from propulsion while sailing between platforms ------------------
 
-    def sail_consumption(self, fromInst, toInst, depTime, arrTime, serStartTime): 
-        if self.Distance[fromInst][toInst] != 0:
-            speed = max(d.minSpeed, self.Distance[fromInst][toInst]/(arrTime - depTime))
-            consumed = 0
-            for time3 in range(depTime, arrTime + 1):
-                consumed += (0.8125*(speed + d.SpeedImpact[self.Weather[time3]])**2 - 13*(speed + d.SpeedImpact[self.Weather[time3]])+82.75)*speed
-            return consumed * d.fuelPrice
-        else:
-            return 0
-        
-    
-    
-    # ------------------ Consumption while idling, waiting for the installation to be ready for service ------------------
-    
-    def idle_consumption(self, arrTime, serStartTime):
-        consumed = 0
-        if (arrTime != serStartTime):
-            for time3 in range(arrTime, serStartTime + 1):
-                consumed += d.idleFuelConsume*(1 + self.Weather[time3] * 0.1)
-        return consumed * d.fuelPrice
-    
-    
-    
-    # ------------------ Consumption while servicing the installation ------------------
+    def get_distance_between_installations(self, installation_1, installation_2):
+        return self.Distance[installation_1][installation_2]
 
-    def dp_consumption(self, serStartTime, inst):
-        consumed = 0
-        if inst == 0:
+    def convert_from_node_time_to_real_time(self, time):
+        return time/self.multiplier
+
+    def convert_from_real_time_to_node_time(self, time):
+        return round(time*self.multiplier)
+
+    def get_earliest_feasible_fin_servicing_time(self, fin_servicing_time, destination_order, iteration_number):
+        erliest_feasible_fin_servicing_time = copy(fin_servicing_time)
+        if not self.is_servicing_possible(fin_servicing_time, destination_order):
+            erliest_feasible_fin_servicing_time = self.get_earliest_feasible_fin_servicing_time(erliest_feasible_fin_servicing_time +1, destination_order, iteration_number +1)
+        return erliest_feasible_fin_servicing_time
+
+    def servicing_calculations(self, fin_servicing_time, destination_order):
+        real_time = self.convert_from_node_time_to_real_time(fin_servicing_time)
+        servicing_time_left = destination_order.demand * d.time_spent_per_demand_unit
+        consumtion = 0
+        while servicing_time_left > 0:
+            if real_time % 1 > 0:
+                if servicing_time_left < (real_time % 1) / d.get_weather_impact(real_time):
+                    consumtion += d.fuel_consumption_DP * servicing_time_left * d.get_weather_impact(real_time)
+                    real_time -= servicing_time_left * d.get_weather_impact(real_time)
+                    servicing_time_left = -1
+                else:
+                    consumtion += d.fuel_consumption_DP * (real_time % 1) * d.get_weather_impact(real_time)
+                    servicing_time_left -= (real_time % 1) / d.get_weather_impact(real_time)
+                    real_time = floor(real_time)
+            else:
+                if servicing_time_left < 1 / d.get_weather_impact(real_time - 1):
+                    consumtion += d.fuel_consumption_DP * servicing_time_left * d.get_weather_impact(real_time - 1)
+                    real_time -= servicing_time_left * d.get_weather_impact(real_time - 1)
+                    servicing_time_left = -1
+                else:
+                    consumtion += d.fuel_consumption_DP * d.get_weather_impact(real_time - 1)
+                    servicing_time_left -= 1 / d.get_weather_impact(real_time - 1)
+                    real_time -= 1
+        return consumtion, real_time
+
+
+    def is_servicing_possible(self, fin_servicing_time, destination_order):
+        real_time = self.convert_from_node_time_to_real_time(fin_servicing_time)
+        servicing_time_left = destination_order.demand * d.time_spent_per_demand_unit
+        while servicing_time_left > 0:
+            if d.get_weather_state(real_time) == 3 or d.is_installation_by_order_number_closed(destination_order, real_time):
+                return False
+            elif real_time % 1 > 0:
+                if servicing_time_left < (real_time % 1) / d.get_weather_impact(real_time):
+                    return True
+                else:
+                    servicing_time_left -= (real_time % 1) / d.get_weather_impact(real_time)
+                    real_time = floor(real_time)
+            else:
+                if servicing_time_left < 1 / d.get_weather_impact(real_time - 1):
+                    return True
+                else:
+                    servicing_time_left -= 1 / d.get_weather_impact(real_time - 1)
+                    real_time -= 1
+        return True
+
+    def is_arrival_possible(self, real_start_time, distance, real_fin_idling_time):
+        time_in_weather_states = self.get_time_in_all_WS(real_start_time, real_fin_idling_time)
+        max_distance = time_in_weather_states[0]* d.max_speed + time_in_weather_states[1]*d.max_speed + time_in_weather_states[2]*(d.max_speed - 2) + time_in_weather_states[3] * (d.max_speed - 3)
+        if max_distance >= distance:
+            return True
+        return False
+
+    def idling_calculatiuons(self, real_start_time, distance, real_fin_idling_time):
+        longest_sailing_time = distance/d.max_speed
+        if (longest_sailing_time >= real_fin_idling_time - real_start_time):
             return 0
-        for time3 in range(serStartTime, serStartTime + self.LayTime[inst] +1):
-            consumed += d.dpFuelConsume*(1 + self.Weather[time3] * 0.1)
-        return consumed * d.fuelPrice
-    
-    
-    
-    # ------------------ Price of renting the ship for the duration of the arc ------------------
-    
-    def spot_price(self, vessel, time1, time2):
-        price = 0
-        if vessel >= self.nVessels:
-            price = d.spotHourRate*(time2 - time1)
-        return price
-    
-    
+        else:
+            idling_duration = real_fin_idling_time - longest_sailing_time - real_start_time
+            real_fin_sailing_time = real_fin_idling_time - idling_duration
+            time_in_weather_states = self.get_time_in_all_WS(real_fin_sailing_time, real_fin_idling_time)
+            idling_consumption = 0
+            for i in range(4):
+                idling_consumption += time_in_weather_states[i] * d.SpeedImpact[i] * d.fuel_consumption_idling
+            return idling_consumption, real_fin_sailing_time
+
+    def get_time_in_all_WS(self, t1, t2):
+        tiws3 = self.get_time_in_WS(t1, t2, 3)
+        tiws2 = self.get_time_in_WS(t1, t2, 2)
+        tiws1 = self.get_time_in_WS(t1, t2, 1)
+        tiws0 = t2 - t1 - tiws1 - tiws2 - tiws3
+        return [tiws0, tiws1, tiws2, tiws3]
+
+
+    def get_time_in_WS(self, t1, t2, weather_state):
+        time = 0
+        _t1 = copy(t1)
+        while _t1 < t2:
+            if _t1 % 1 > 0:
+                if t2 - _t1 <= 1 - (_t1 % 1):
+                    time += t2 - _t1 if self.is_weather_state(weather_state, _t1) else 0
+                    _t1 = t2 + 1
+                else:
+                    time += 1 - (_t1 % 1) if self.is_weather_state(weather_state, _t1) else 0
+                    _t1 = ceil(_t1)
+            else:
+                if t2 - _t1 <= 1:
+                    time += t2 - _t1 if self.is_weather_state(weather_state, _t1) else 0
+                    _t1 = t2 + 1
+                else:
+                    time += 1 if self.is_weather_state(weather_state, _t1) else 0
+                    _t1 += 1
+        return time
+
+
+    def is_weather_state(self, weather_state, time):
+        return d.get_weather_state(time) == weather_state
+
+    def calculate_adjusted_average_speed(self, time_in_all_weather_states, distance):
+        durationWS3 = time_in_all_weather_states[3]
+        durationWS2 = time_in_all_weather_states[2]
+        durationWS01 = time_in_all_weather_states[1] + time_in_all_weather_states[0]
+        duration = sum(time_in_all_weather_states)
+        speed = distance / duration
+        if durationWS01 == 0 and speed > (durationWS2 * (d.max_speed - 2) + durationWS3 * (d.max_speed - 3))/(durationWS2 + durationWS3):
+            speed = d.max_speed + 1
+        else:
+            if speed > (d.max_speed - 3):
+                speed += (durationWS3 * (speed - (d.max_speed - 3))) / (durationWS01 + durationWS2)
+            if speed > (d.max_speed - 2):
+                speed += (durationWS2 * (speed - (d.max_speed - 2))) / durationWS01
+        return speed
+
+    def sailing_calculations(self, time_in_all_weather_states, adjusted_average_speed):
+        cost = 0
+        cost += (time_in_all_weather_states[0] + time_in_all_weather_states[1]) * self.consumptionFunction(adjusted_average_speed)
+        cost += time_in_all_weather_states[2] * self.consumptionFunction(adjusted_average_speed + 2) if adjusted_average_speed < d.max_speed - 2 else time_in_all_weather_states[2] * self.consumptionFunction(d.max_speed)
+        cost += time_in_all_weather_states[3] * self.consumptionFunction(adjusted_average_speed + 3) if adjusted_average_speed < d.max_speed - 3 else time_in_all_weather_states[3] * self.consumptionFunction(d.max_speed)
+        return cost
+
+    def consumptionFunction(self, speed):
+        return (0.8125 * speed * speed - 13.00 * speed + 72.75)
+
+
+    #TODO! inject some juicy spot price
+
         
