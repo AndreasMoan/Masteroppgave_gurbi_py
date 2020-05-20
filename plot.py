@@ -6,31 +6,36 @@ Created on Thu Oct 31 18:05:19 2019
 import plotly.graph_objects as go
 from plotly.offline import plot
 import networkx as nx
+import data as d
 
-def draw_routes(fuel_cost, Insts, Times, Vessels):
+def draw_routes(fuel_cost): #, Insts, time_periods, Vessels):
     G = nx.Graph()
 
-    InstTimes = [[[] for i in Insts] for v in Vessels]
+    Insts = d.order_numbers
+    Vessels = d.vessel_numbers
+    time_periods = d.time_periods
+
+    Inst_time_periods = [[[] for i in Insts] for v in Vessels]
     for v in Vessels:
         for i in Insts:
-            for t in Times:
+            for t in time_periods:
                 count = 0
                 for j in Insts:
-                    for tau in Times:
+                    for tau in time_periods:
                         if fuel_cost[v][j][tau][i][t] != 0 or fuel_cost[v][i][t][j][tau] != 0:
                             count += 1
                 if count != 0:
-                    InstTimes[v][i].append(t)
+                    Inst_time_periods[v][i].append(t)
 
 
     for i in Insts:
-        for t in InstTimes[0][i]:
+        for t in Inst_time_periods[0][i]:
             G.add_node(t*30 + i, pos=(t,i))
 
     for i in Insts:
-        for t in Times:
+        for t in time_periods:
             for j in Insts:
-                for tau in Times:
+                for tau in time_periods:
                     if fuel_cost[0][i][t][j][tau]!= 0:
                         G.add_edge(t*30 + i, tau*30 + j, weight=fuel_cost[0][i][t][j][tau])
                         
@@ -39,8 +44,8 @@ def draw_routes(fuel_cost, Insts, Times, Vessels):
     edge_y = []
     
     for edge in G.edges():
-        x0, y0 = G.node[edge[0]]['pos']
-        x1, y1 = G.node[edge[1]]['pos']
+        x0, y0 = G.nodes[edge[0]]['pos']
+        x1, y1 = G.nodes[edge[1]]['pos']
         edge_x.append(x0)
         edge_x.append(x1)
         edge_x.append(None)
@@ -58,7 +63,7 @@ def draw_routes(fuel_cost, Insts, Times, Vessels):
     node_y = []
     
     for node in G.nodes():
-        x, y = G.node[node]['pos']
+        x, y = G.nodes[node]['pos']
         node_x.append(x)
         node_y.append(y)
     

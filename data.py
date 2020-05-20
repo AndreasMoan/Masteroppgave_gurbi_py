@@ -4,8 +4,32 @@ Created on Mon Nov 11 11:01:49 2019
 
 @author: andrebmo
 """
+import math
 
 # =============================== DATA ===============================
+
+# ---------------------------- SingleParameters ----------------------------
+
+fuel_price = 0.2755 #Dollars per kg
+
+max_speed = 14
+
+min_speed = 7
+
+fuel_consumption_sailing = 340 #kg
+
+fuel_consumption_DP = 170 #kg
+
+fuel_consumption_idling = 120 #kg
+
+spotHourRate = 5653
+
+time_spent_per_demand_unit = 0.1
+
+# ---------------------------- Precision ----------------------------
+
+number_of_time_periods_per_hour = 4
+
 
 # ---------------------------- Installations ----------------------------
 
@@ -18,34 +42,39 @@ class Installation:
 
 installations = []
 
-installations.append(Installation("DEP", 0,23, 0))
+installations.append(Installation("DEP", 0,24, 0))
 installations.append(Installation("TRO", 7,19, 1))
 installations.append(Installation("TRB", 7,19, 2))
 installations.append(Installation("TRC", 7,19, 3))
-installations.append(Installation("CPR", 0,23, 4))
-installations.append(Installation("SEN", 0,23, 5))
-installations.append(Installation("SDO", 0,23, 6))
-installations.append(Installation("SEQ", 0,23, 7))
-installations.append(Installation("OSE", 0,23, 8))
-installations.append(Installation("OSB", 0,23, 9))
-installations.append(Installation("OSC", 0,23, 10))
-installations.append(Installation("OSO", 0,23, 11))
-installations.append(Installation("SSC", 0,23, 12))
-installations.append(Installation("OSS", 0,23, 13))
-installations.append(Installation("DSD", 0,23, 14))
-installations.append(Installation("KVB", 0,23, 15))
-installations.append(Installation("VMO", 0,23, 16))
-installations.append(Installation("WEL", 0,23, 17))
-installations.append(Installation("VFB", 0,23, 18))
-installations.append(Installation("WEP", 0,23, 19))
-installations.append(Installation("HUL", 0,23, 20))
+installations.append(Installation("CPR", 0,24, 4))
+installations.append(Installation("SEN", 0,24, 5))
+installations.append(Installation("SDO", 0,24, 6))
+installations.append(Installation("SEQ", 0,24, 7))
+installations.append(Installation("OSE", 0,24, 8))
+installations.append(Installation("OSB", 0,24, 9))
+installations.append(Installation("OSC", 0,24, 10))
+installations.append(Installation("OSO", 0,24, 11))
+installations.append(Installation("SSC", 0,24, 12))
+installations.append(Installation("OSS", 0,24, 13))
+installations.append(Installation("DSD", 0,24, 14))
+installations.append(Installation("KVB", 0,24, 15))
+installations.append(Installation("VMO", 0,24, 16))
+installations.append(Installation("WEL", 0,24, 17))
+installations.append(Installation("VFB", 0,24, 18))
+installations.append(Installation("WEP", 0,24, 19))
+installations.append(Installation("HUL", 0,24, 20))
 installations.append(Installation("STA", 7,19, 21))
-installations.append(Installation("STB", 0,23, 22))
-installations.append(Installation("STC", 0,23, 23))
-installations.append(Installation("GFA", 0,23, 24))
-installations.append(Installation("GFB", 0,23, 25))
-installations.append(Installation("GFC", 0,23, 26))
-installations.append(Installation("SOD", 0,23, 27))
+installations.append(Installation("STB", 0,24, 22))
+installations.append(Installation("STC", 0,24, 23))
+installations.append(Installation("GFA", 0,24, 24))
+installations.append(Installation("GFB", 0,24, 25))
+installations.append(Installation("GFC", 0,24, 26))
+installations.append(Installation("SOD", 0,24, 27))
+
+installation_numbers = []
+
+for installation in installations:
+    installation_numbers.append(installation.number)
 
 
 #InstNames = ['TRO', 'TRB', 'TRC', 'CPR', 'SEN', 'SDO', 'SEQ', 'OSE', 'OSB', 'OSC', 'OSO', 'SSC', 'OSS', 'DSD', 'KVB', 'VMO', 'WEL', 'VFB', 'WEP', 'HUL', 'STA', 'STB', 'STC', 'GFA', 'GFB', 'GFC', 'SOD']
@@ -94,27 +123,29 @@ Distance =  [[0.00, 43.47, 47.25, 43.76, 44.47, 44.65, 43.21, 41.73, 71.65, 71.6
               [37.67, 15.85, 11.98, 6.26, 11.26, 7.36, 6.32, 4.14, 38.54, 38.54, 35.46, 28.46, 28.46, 43.35, 60.40, 39.52, 43.68, 43.68, 27.89, 34.06, 34.06, 60.72, 60.62, 60.22, 50.13, 50.18, 48.28, 0.00]]
 
 def get_distance_between_installation_number(first_order_number, second_order_number):
-    return Distance(first_order_number, second_order_number)
+    return Distance[first_order_number][second_order_number]
 
 class Order:
-    def __init__(self, demand, departure_day, installation_number, order_number, deadline):
+    def __init__(self, demand, departure_day, installation, order_number, deadline):
         self.demand = demand
         self.departure_day = departure_day
-        self.installation_number = installation_number
+        self.installation = installation
         self.number = order_number
         self.deadline = deadline
 
 orders = []
 
+orders.append(Order(0, 0, installations[0], 0, 10))
 orders.append(Order(17, 0, installations[4], 1, 3))
 orders.append(Order(11, 0, installations[16], 2, 3))
 orders.append(Order(28, 0, installations[11], 3, 3))
 orders.append(Order(5, 0, installations[17], 4, 3))
 orders.append(Order(30, 0, installations[20], 5, 3))
-orders.append(Order(14, 0, installations[21], 6, 3))
-orders.append(Order(18, 0, installations[26], 7, 3))
-orders.append(Order(22, 0, installations[9], 8, 3))
-orders.append(Order(15, 0, installations[1], 9, 3))
+orders.append(Order(14, 0, installations[21], 6, 2))
+orders.append(Order(18, 0, installations[26], 7, 2))
+orders.append(Order(22, 0, installations[9], 8, 2))
+orders.append(Order(15, 0, installations[1], 9, 2))
+"""
 orders.append(Order(18, 0, installations[2], 10, 3))
 orders.append(Order(19, 0, installations[3], 11, 3))
 orders.append(Order(20, 0, installations[22], 12, 3))
@@ -122,26 +153,41 @@ orders.append(Order(26, 0, installations[12], 13, 3))
 orders.append(Order(4, 0, installations[13], 14, 3))
 orders.append(Order(20, 0, installations[18], 15, 3))
 orders.append(Order(8, 0, installations[15], 16, 3))
+"""
+order_numbers = []
+for order in orders:
+    order_numbers.append(order.number)
 
 
 # ---------------------------- Vessels ----------------------------
 
 class Vessel:
-    def __init__(self, number, return_day, capacity):
+    def __init__(self, number, return_day, capacity, name):
         self.number = number
-        self.return_day = return_day;
-        self.capacity = capacity;
+        self.return_day = return_day
+        self.capacity = capacity
+        self.name = name
 
 vessels = []
 
-vessels.append(Vessel(0, 3, 100))
-vessels.append(Vessel(0, 3, 100))
-vessels.append(Vessel(0, 3, 100))
+vessels.append(Vessel(0, 3, 100, "PSV1"))
+vessels.append(Vessel(1, 3, 100, "PSV2"))
+# vessels.append(Vessel(2, 3, 100, "PSV3"))
 
+vessel_numbers = []
+for vessel in vessels:
+    vessel_numbers.append(vessel.number)
 
 #Times
 
-Times = [0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100,  101,  102,  103,  104,  105,  106,  107,  108,  109,  110,  111,  112,  113,  114,  115,  116,  117,  118,  119,  120,  121,  122,  123,  124,  125,  126,  127,  128,  129,  130,  131,  132,  133,  134,  135,  136,  137,  138,  139,  140,  141,  142,  143,  144,  145,  146,  147,  148,  149,  150,  151,  152,  153,  154,  155,  156,  157,  158,  159,  160,  161,  162,  163,  164,  165,  166,  167,  168,  169,  170,  171,  172,  173,  174,  175,  176,  177,  178,  179,  180,  181,  182,  183,  184,  185,  186,  187,  188,  189,  190,  191,  192,  193,  194,  195,  196,  197,  198,  199,  200,  201,  202,  203,  204,  205,  206,  207,  208,  209,  210,  211,  212,  213,  214,  215,  216]
+Times = [0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100,  101,  102,  103,  104,  105,  106,  107,  108,  109,  110,  111,  112,  113,  114,  115,  116,  117,  118,  119,  120]#,  121,  122,  123,  124,  125,  126,  127,  128,  129,  130,  131,  132,  133,  134,  135,  136,  137,  138,  139,  140,  141,  142,  143,  144,  145,  146,  147,  148,  149,  150,  151,  152,  153,  154,  155,  156,  157,  158,  159,  160,  161,  162,  163,  164,  165,  166,  167,  168,  169,  170,  171,  172,  173,  174,  175,  176,  177,  178,  179,  180,  181,  182,  183,  184,  185,  186,  187,  188,  189,  190,  191,  192,  193,  194,  195,  196,  197,  198,  199,  200,  201,  202,  203,  204,  205,  206,  207,  208,  209,  210,  211,  212,  213,  214,  215,  216]
+
+time_periods = []
+
+for hour in Times:
+    for i in range(number_of_time_periods_per_hour):
+        index_of_this_time_period = hour * number_of_time_periods_per_hour + i
+        time_periods.append(index_of_this_time_period)
 
 # ---------------------------- WeatherForecast ----------------------------
 
@@ -152,41 +198,28 @@ Times = [0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12,  13,  14,  15,  1
 #       | W[1] = Stormy ( platforms barely servicable some days )                           |
 #       | W[2] = Summer breeze ( bad weather rolling in but platforms still servicable )    |
 #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Times =   [0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120]#,121,122,123,124,125,126,127,128,129,130,131,132,133,  134,  135,  136,  137,  138,  139,  140,  141,  142,  143,  144,  145,  146,  147,  148,  149,  150,  151,  152,  153,  154,  155,  156,  157,  158,  159,  160,  161,  162,  163,  164,  165,  166,  167,  168,  169,  170,  171,  172,  173,  174,  175,  176,  177,  178,  179,  180,  181,  182,  183,  184,  185,  186,  187,  188,  189,  190,  191,  192,  193,  194,  195,  196,  197,  198,  199,  200,  201,  202,  203,  204,  205,  206,  207,  208,  209,  210,  211,  212,  213,  214,  215,  216]
+Weather = [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]
 
-Weather = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
+SpeedImpact = [0,0, 2, 3]
 
-SpeedImpact = [0, 0, 2, 3]
-
-ServiceImpact = [0, 1.2, 1.3, 2]
-
-# ---------------------------- SingleParameters ----------------------------
-
-fuel_price = 7.1
-
-max_speed = 14
-
-min_speed = 7
-
-fuel_consumption_sailing = 340
-
-fuel_consumption_DP = 170
-
-fuel_consumption_idling = 120
-
-spotHourRate = 5653
-
-time_spent_per_demand_unit = 0.1
-
-# ---------------------------- Precision ----------------------------
-
-number_of_time_periods_per_hour = 4
+ServiceImpact = [1, 1.2, 1.3, 2]
 
 # ---------------------------- Functions ----------------------------
 
 def get_weather_impact(real_time):
     weather_state = get_weather_state(real_time)
-    ServiceImpact[weather_state]
+    return ServiceImpact[weather_state]
 
 def get_weather_state(real_time):
-    return Weather[floor(time)]
+    return Weather[math.floor(real_time)]
 
+
+def is_installation_by_order_number_closed(destination_order, real_time):
+    time_of_day = real_time%24
+    if destination_order.installation.opening_hour > time_of_day or destination_order.installation.closing_hour < time_of_day:
+        return True
+    return False
+
+def get_vessel_by_number(number):
+    return vessels[number]
