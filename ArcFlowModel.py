@@ -41,7 +41,7 @@ class Model:
 #       ------------------------------------------------------------
         
         print("Plotting graph....")
-        # plot.draw_routes(self.fuel_cost)
+        plot.draw_routes(self.fuel_cost)
         
         print("-------------- OPTIMIZING MODEL ----------------\n")
 
@@ -71,7 +71,8 @@ class Model:
 
                 for order in d.orders:
 
-                    if self.nodes[vessel.number][time][order.number]:
+                    if self.nodes[vessel.number][time][order.number] and (order.number != 0 or (time == 16*self.multiplier and order.number == 0)):
+
                         self.build_arcs(vessel.number, time, order)
         
     
@@ -94,6 +95,7 @@ class Model:
 
                 earliest_theoretical_end_time = start_node_time + math.ceil((distance/d.max_speed + destination_order.demand * d.time_spent_per_demand_unit) * self.multiplier)
                 latest_theoretical_end_time = start_node_time + math.ceil((distance/d.min_speed + destination_order.demand * d.time_spent_per_demand_unit) * self.multiplier)
+                print("a ", earliest_theoretical_end_time, latest_theoretical_end_time)
 
                 fin_servicing_time = earliest_theoretical_end_time
 
@@ -102,7 +104,12 @@ class Model:
 
                     fin_servicing_time = self.get_earliest_feasible_fin_servicing_time(fin_servicing_time, destination_order, 0)
 
+                    print("b ", fin_servicing_time)
+
                     servicing_consumption, real_fin_idling_time = self.servicing_calculations(fin_servicing_time, destination_order)
+
+                    print("c ", servicing_consumption)
+                    print("d ", real_fin_idling_time)
 
                     if self.is_arrival_possible(real_start_time, distance, real_fin_idling_time) != True:
                         fin_servicing_time += 1
@@ -110,11 +117,16 @@ class Model:
 
                     idling_consumption, real_fin_sailing_time = self.idling_calculatiuons(real_start_time, distance, real_fin_idling_time)
 
+                    print("e ", idling_consumption)
+                    print("f ", real_fin_sailing_time)
+
                     sailing_consumption = 0
 
                     if distance != 0:
                         time_in_all_weather_states = self.get_time_in_all_WS(real_start_time, real_fin_sailing_time)
+                        print("g ", time_in_all_weather_states)
                         adjusted_average_speed = self.calculate_adjusted_average_speed(time_in_all_weather_states, distance)
+                        print("h ", adjusted_average_speed)
                         sailing_consumption = self.sailing_calculations(time_in_all_weather_states, adjusted_average_speed)
 
                     self.add_arc(vessel_number, departure_order, destination_order, start_node_time, fin_servicing_time, sailing_consumption, idling_consumption, servicing_consumption)
@@ -133,11 +145,15 @@ class Model:
 
             self.nodes[vessel_number][finish_node_time][destination_order.number] = True
 
-            print()
-            print("Adding arc number:", self.counter)
-            print("vessel:",vessel_number,"dep order: ", departure_order.number, "dest order: ", destination_order.number, "start: ", start_node_time,"finish: ", finish_node_time, "c sail: ", sailing_consumption, "c idle: ", idling_consumption, "c ser: ", servicing_consumption)
+            arc_cost = ((sailing_consumption + idling_consumption + servicing_consumption)*d.fuel_price)
 
-            self.fuel_cost[vessel_number][departure_order.number][start_node_time][destination_order.number][finish_node_time] = ((sailing_consumption + idling_consumption + servicing_consumption)*d.fuel_price)
+            print("i ", arc_cost)
+            print("Adding arc number:", self.counter)
+            print("vessel:", vessel_number, "dep order: ", departure_order.number, "dest order: ",
+                  destination_order.number, "start: ", start_node_time, "finish: ", finish_node_time, "c sail: ",
+                  sailing_consumption, "c idle: ", idling_consumption, "c ser: ", servicing_consumption)
+
+            self.fuel_cost[vessel_number][departure_order.number][start_node_time][destination_order.number][finish_node_time] = arc_cost
         else:
             self.counter -= 1
     
@@ -212,7 +228,8 @@ class Model:
         return False
 
     def idling_calculatiuons(self, real_start_time, distance, real_fin_idling_time):
-        longest_sailing_time = distance/d.max_speed
+        longest_sailing_time = distance/d.min_speed
+
         if (longest_sailing_time >= real_fin_idling_time - real_start_time):
             return 0, real_fin_idling_time
         else:

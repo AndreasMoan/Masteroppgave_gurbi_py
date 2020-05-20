@@ -16,8 +16,6 @@ max_speed = 14
 
 min_speed = 7
 
-fuel_consumption_sailing = 340 #kg
-
 fuel_consumption_DP = 170 #kg
 
 fuel_consumption_idling = 120 #kg
@@ -136,23 +134,26 @@ class Order:
 orders = []
 
 orders.append(Order(0, 0, installations[0], 0, 10))
+
 orders.append(Order(17, 0, installations[4], 1, 3))
+"""
 orders.append(Order(11, 0, installations[16], 2, 3))
 orders.append(Order(28, 0, installations[11], 3, 3))
 orders.append(Order(5, 0, installations[17], 4, 3))
+
 orders.append(Order(30, 0, installations[20], 5, 3))
 orders.append(Order(14, 0, installations[21], 6, 2))
 orders.append(Order(18, 0, installations[26], 7, 2))
 orders.append(Order(22, 0, installations[9], 8, 2))
 orders.append(Order(15, 0, installations[1], 9, 2))
-"""
+
 orders.append(Order(18, 0, installations[2], 10, 3))
 orders.append(Order(19, 0, installations[3], 11, 3))
 orders.append(Order(20, 0, installations[22], 12, 3))
 orders.append(Order(26, 0, installations[12], 13, 3))
 orders.append(Order(4, 0, installations[13], 14, 3))
 orders.append(Order(20, 0, installations[18], 15, 3))
-orders.append(Order(8, 0, installations[15], 16, 3))
+orders.append(Order(8, 0, installations[15], 16, 1))
 """
 order_numbers = []
 for order in orders:
@@ -171,7 +172,7 @@ class Vessel:
 vessels = []
 
 vessels.append(Vessel(0, 3, 100, "PSV1"))
-vessels.append(Vessel(1, 3, 100, "PSV2"))
+# vessels.append(Vessel(1, 3, 100, "PSV2"))
 # vessels.append(Vessel(2, 3, 100, "PSV3"))
 
 vessel_numbers = []
