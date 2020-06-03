@@ -3,7 +3,7 @@ import data as d
 
 
 
-def solve(fuel_cost, Name):
+def solve(fuel_cost, Name, scenario_number):
 
     # =============== INITIATE MODEL ===============
     
@@ -14,18 +14,19 @@ def solve(fuel_cost, Name):
     model.setParam('TimeLimit', 3*60*60)
     
     # =============== SETS ===============
-
-
+    
+    vessels, vessel_numbers = d.get_vessels_in_scenario(scenario_number)
+    orders, order_numbers = d.get_orders_in_scenario(scenario_number)
     
     # --------------- node_times ---------------
     
-    node_times = [[[]for i in d.order_numbers]for v in d.vessel_numbers]
+    node_times = [[[]for i in order_numbers]for v in vessel_numbers]
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
             for t in d.time_periods:
                 count = 0
-                for j in d.order_numbers:
+                for j in order_numbers:
                     for tau in d.time_periods:
                         if fuel_cost[v][j][tau][i][t] != 0 or fuel_cost[v][i][t][j][tau] != 0:
                             count += 1
@@ -36,13 +37,13 @@ def solve(fuel_cost, Name):
 
     # --------------- node_vessels ---------------
 
-    node_vessels = [[[]for t in d.time_periods] for i in d.order_numbers]
+    node_vessels = [[[]for t in d.time_periods] for i in order_numbers]
 
-    for i in d.order_numbers:
+    for i in order_numbers:
         for t in d.time_periods:
-            for v in d.vessel_numbers:
+            for v in vessel_numbers:
                 count = 0
-                for j in d.order_numbers:
+                for j in order_numbers:
                     for tau in d.time_periods:
                         if fuel_cost[v][j][tau][i][t] != 0 or fuel_cost[v][i][t][j][tau] != 0:
                             count += 1
@@ -53,12 +54,12 @@ def solve(fuel_cost, Name):
 
     # --------------- to_insts ---------------
 
-    to_insts = [[[[]for t in d.time_periods]for i in d.order_numbers]for v in d.vessel_numbers] # tror denne er riktig
+    to_insts = [[[[]for t in d.time_periods]for i in order_numbers]for v in vessel_numbers] # tror denne er riktig
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
             for t in node_times[v][i]:
-                for j in d.order_numbers:
+                for j in order_numbers:
                     count = 0
                     for tau in d.time_periods:
                         if fuel_cost[v][i][t][j][tau] != 0:
@@ -70,12 +71,12 @@ def solve(fuel_cost, Name):
 
     # --------------- from_insts ---------------
 
-    from_insts = [[[[]for tau in d.time_periods]for j in d.order_numbers]for v in d.vessel_numbers]
+    from_insts = [[[[]for tau in d.time_periods]for j in order_numbers]for v in vessel_numbers]
 
-    for v in d.vessel_numbers:
-        for j in d.order_numbers:
+    for v in vessel_numbers:
+        for j in order_numbers:
             for tau in node_times[v][j]:
-                for i in d.order_numbers:
+                for i in order_numbers:
                     count = 0
                     for t in d.time_periods:
                         if fuel_cost[v][i][t][j][tau] != 0:
@@ -87,14 +88,14 @@ def solve(fuel_cost, Name):
 
     # --------------- departure_times ---------------
 
-    departure_times = [[[[]for j in d.order_numbers] for i in d.order_numbers] for v in d.vessel_numbers]    #ser riktig ut
+    departure_times = [[[[]for j in order_numbers] for i in order_numbers] for v in vessel_numbers]    #ser riktig ut
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
-            for j in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
+            for j in order_numbers:
                 for t in d.time_periods:
                     count = 0
-                    for tau in d.time_periods:                                           #kan evt skrive for tau større enn t (for å øke leseligheten)
+                    for tau in d.time_periods:                                         
                         if fuel_cost[v][i][t][j][tau] != 0:
                             count += 1
                     if count != 0:
@@ -104,11 +105,11 @@ def solve(fuel_cost, Name):
 
     # --------------- arrival_times ---------------
 
-    arrival_times = [[[[]for j in d.order_numbers] for i in d.order_numbers] for v in d.vessel_numbers]
+    arrival_times = [[[[]for j in order_numbers] for i in order_numbers] for v in vessel_numbers]
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
-            for j in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
+            for j in order_numbers:
                 for tau in d.time_periods:
                     count = 0
                     for t in d.time_periods:
@@ -121,11 +122,11 @@ def solve(fuel_cost, Name):
 
     # --------------- specific_departure_times ---------------
 
-    specific_departure_times = [[[[[] for tau in d.time_periods] for j in d.order_numbers] for i in d.order_numbers] for v in d.vessel_numbers]
+    specific_departure_times = [[[[[] for tau in d.time_periods] for j in order_numbers] for i in order_numbers] for v in vessel_numbers]
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
-            for j in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
+            for j in order_numbers:
                 for tau in arrival_times[v][i][j]:
                     for t in d.time_periods:
                         if fuel_cost[v][i][t][j][tau] != 0:
@@ -135,11 +136,11 @@ def solve(fuel_cost, Name):
 
     # --------------- specific_arrival_times ---------------
 
-    specific_arrival_times = [[[[[] for j in d.order_numbers] for t in d.time_periods] for i in d.order_numbers] for v in d.vessel_numbers]
+    specific_arrival_times = [[[[[] for j in order_numbers] for t in d.time_periods] for i in order_numbers] for v in vessel_numbers]
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
-            for j in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
+            for j in order_numbers:
                 for t in departure_times[v][i][j]:
                     for tau in d.time_periods:
                         if fuel_cost[v][i][t][j][tau] != 0:
@@ -156,9 +157,9 @@ def solve(fuel_cost, Name):
 
     x = {}
 
-    for v in d.vessel_numbers:
-        for i in d.order_numbers:
-            for j in d.order_numbers:
+    for v in vessel_numbers:
+        for i in order_numbers:
+            for j in order_numbers:
                 if j != i:
                     for t in departure_times[v][i][j]:
                         for tau in specific_arrival_times[v][i][t][j]:
@@ -206,8 +207,8 @@ def solve(fuel_cost, Name):
 
             == 0
 
-            for v in d.vessel_numbers
-            for i in d.order_numbers
+            for v in vessel_numbers
+            for i in order_numbers
             if i != 0
             for t in node_times[v][i])
 
@@ -223,15 +224,15 @@ def solve(fuel_cost, Name):
 
                     x[v,i,t,j,tau]
 
-                    for i in d.order_numbers
+                    for i in order_numbers
                     if i != j
                     for t in departure_times[v][i][j]
                     for tau in specific_arrival_times[v][i][t][j])
 
             <= 1
 
-            for j in d.order_numbers
-            for v in d.vessel_numbers)
+            for j in order_numbers
+            for v in vessel_numbers)
 
             , "Only one Inst visit per voy: j" + str(j) + " v" + str(v))
 
@@ -245,13 +246,13 @@ def solve(fuel_cost, Name):
 
                     x[v,0,t,j,tau]
 
-                    for j in d.order_numbers
+                    for j in order_numbers
                     for t in departure_times[v][0][j]
                     for tau in specific_arrival_times[v][0][t][j])
 
             <= 1
 
-            for v in d.vessel_numbers)
+            for v in vessel_numbers)
 
             , "Only sail from depot once per voyage: v" + str(v))
 
@@ -267,15 +268,15 @@ def solve(fuel_cost, Name):
 
                     x[v,i,t,j,tau]
 
-                    for v in d.vessel_numbers
-                    for i in d.order_numbers
+                    for v in vessel_numbers
+                    for i in order_numbers
                     if i != j
                     for t in departure_times[v][i][j]
                     for tau in specific_arrival_times[v][i][t][j])
 
             == 1
 
-            for j in d.order_numbers
+            for j in order_numbers
             if j != 0)
 
             , name = ("Demanded visits: j" + str(j)))
@@ -289,17 +290,17 @@ def solve(fuel_cost, Name):
 
             gp.quicksum(
 
-                    x[v,i,t,j,tau] * d.orders[j].demand
+                    x[v,i,t,j,tau] * orders[j].demand
 
-                    for i in d.order_numbers
-                    for j in d.order_numbers
+                    for i in order_numbers
+                    for j in order_numbers
                     if j != 0
                     for t in departure_times[v][i][j]
                     for tau in specific_arrival_times[v][i][t][j])
 
-            <= d.vessels[v].capacity
+            <= vessels[v].capacity
 
-            for v in d.vessel_numbers)
+            for v in vessel_numbers)
 
             , "PSV capacity: v" + str(v))
 
@@ -314,9 +315,9 @@ def solve(fuel_cost, Name):
     model.setObjective(
 
             gp.quicksum(x[v,i,t,j,tau] * fuel_cost[v][i][t][j][tau]
-                for v in d.vessel_numbers
-                for i in d.order_numbers
-                for j in d.order_numbers 
+                for v in vessel_numbers
+                for i in order_numbers
+                for j in order_numbers 
                 if j != i
                 for t in departure_times[v][i][j]
                 for tau in specific_arrival_times[v][i][t][j]), 
@@ -330,13 +331,12 @@ def solve(fuel_cost, Name):
     model.update()
     
     model.printStats()
-    
-    model.write(Name + ".lp")
+
 
     # =============== RUN MODEL ===============
     
     model.optimize()
-    
+
     model.printAttr('x')
     
 

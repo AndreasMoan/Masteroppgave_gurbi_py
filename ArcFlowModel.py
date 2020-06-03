@@ -1,37 +1,41 @@
 #import numpy as np
 import math
-import gurobipy as gp
 import data as d, optimizationModel as om
-import plot
 from collections import defaultdict
 
 class Model:
     
     # ================== INITIALIZATION ==================
     
-    def __init__(self):
+    def __init__(self, scenario_number):
         print(d.time_periods)
+        self.vessels, self.vessel_numbers = d.get_vessels_in_scenario(scenario_number)
+        print(1)
+        self.orders, self.order_numbers = d.get_orders_in_scenario(scenario_number)
         self.multiplier = d.number_of_time_periods_per_hour
+
+
         self.nodes = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: False)))
-        for vessel in d.vessels:
+        for vessel in self.vessels:
             self.nodes[vessel.number][16*self.multiplier][0] = True
-        self.fuel_cost = [[[[[0 for end_time in d.time_periods] for destinatintion_order in d.orders] for start_time in d.time_periods] for departure_order in d.orders] for vessel in d.vessels]
+
+        self.fuel_cost = [[[[[0 for end_time in d.time_periods] for destinatintion_order in self.orders] for start_time in d.time_periods] for departure_order in self.orders] for vessel in self.vessels]
 
     # self.fuel_cost[vessel][departure_order][start_node_time][destination_order][finish_node_time]
         self.counter = 0;
-        self.name = "testrun"
-        self.run_model()
+        self.name = "Gpy_s" + str(scenario_number)
+        self.run_model(scenario_number)
 
 
 
 
     # ================== RUNNING THE MODEL ==================
     
-    def run_model(self):
+    def run_model(self, scenario_number):
 
 
         
-        print("\n\n================== INITIALIZING MODEL ==================\n")
+        print("\n\n================== INITIALIZING MODEL FOR SCENARIO " + str(scenario_number) + " ==================\n")
         self.build_model()
         print("\nNetwork generation successful!")
         print("------------------------------------------------")
@@ -41,11 +45,11 @@ class Model:
 #       ------------------------------------------------------------
         
         print("Plotting graph....")
-        plot.draw_routes(self.fuel_cost)
+        # plot.draw_routes(self.fuel_cost, self.order_numbers, self.vessel_numbers)
         
         print("-------------- OPTIMIZING MODEL ----------------\n")
 
-        om.solve(self.fuel_cost, self.name)
+        om.solve(self.fuel_cost, self.name, scenario_number)
         """
         except gp.GurobiError as e:
             print('Error code ' + str(e.errno) + ": " + str(e))
@@ -63,13 +67,12 @@ class Model:
     
     def build_model(self): #TODO fix so that arcs are created to and from depot aswell
 
-        print(self.nodes)
-
-        for vessel in d.vessels:
+        for vessel in self.vessels:
+            print(self.vessels)
             
             for time in range(16*self.multiplier, vessel.return_day*24*self.multiplier):
 
-                for order in d.orders:
+                for order in self.orders:
 
                     if self.nodes[vessel.number][time][order.number] and (order.number != 0 or (time == 16*self.multiplier and order.number == 0)):
 
@@ -82,7 +85,7 @@ class Model:
     
     def build_arcs(self, vessel_number, start_node_time, departure_order):
         
-        for destination_order in d.orders:
+        for destination_order in self.orders:
             
             if destination_order.number != departure_order.number:
 
@@ -94,8 +97,8 @@ class Model:
                 real_start_time = self.convert_from_node_time_to_real_time(start_node_time)
 
                 earliest_theoretical_end_time = start_node_time + math.ceil((distance/d.max_speed + destination_order.demand * d.time_spent_per_demand_unit) * self.multiplier)
-                latest_theoretical_end_time = start_node_time + math.ceil((distance/d.min_speed + destination_order.demand * d.time_spent_per_demand_unit) * self.multiplier)
-                print("a ", earliest_theoretical_end_time, latest_theoretical_end_time)
+                latest_theoretical_end_time = start_node_time + math.ceil((distance/d.min_speed + destination_order.demand * d.time_spent_per_demand_unit * 1.3) * self.multiplier)
+                #print("a ", earliest_theoretical_end_time, latest_theoretical_end_time)
 
                 fin_servicing_time = earliest_theoretical_end_time
 
@@ -104,12 +107,12 @@ class Model:
 
                     fin_servicing_time = self.get_earliest_feasible_fin_servicing_time(fin_servicing_time, destination_order, 0)
 
-                    print("b ", fin_servicing_time)
+                    #print("b ", fin_servicing_time)
 
                     servicing_consumption, real_fin_idling_time = self.servicing_calculations(fin_servicing_time, destination_order)
 
-                    print("c ", servicing_consumption)
-                    print("d ", real_fin_idling_time)
+                    #print("c ", servicing_consumption)
+                    #print("d ", real_fin_idling_time)
 
                     if self.is_arrival_possible(real_start_time, distance, real_fin_idling_time) != True:
                         fin_servicing_time += 1
@@ -117,16 +120,16 @@ class Model:
 
                     idling_consumption, real_fin_sailing_time = self.idling_calculatiuons(real_start_time, distance, real_fin_idling_time)
 
-                    print("e ", idling_consumption)
-                    print("f ", real_fin_sailing_time)
+                    #print("e ", idling_consumption)
+                    #print("f ", real_fin_sailing_time)
 
                     sailing_consumption = 0
 
                     if distance != 0:
                         time_in_all_weather_states = self.get_time_in_all_WS(real_start_time, real_fin_sailing_time)
-                        print("g ", time_in_all_weather_states)
+                        #print("g ", time_in_all_weather_states)
                         adjusted_average_speed = self.calculate_adjusted_average_speed(time_in_all_weather_states, distance)
-                        print("h ", adjusted_average_speed)
+                        #print("h ", adjusted_average_speed)
                         sailing_consumption = self.sailing_calculations(time_in_all_weather_states, adjusted_average_speed)
 
                     self.add_arc(vessel_number, departure_order, destination_order, start_node_time, fin_servicing_time, sailing_consumption, idling_consumption, servicing_consumption)
@@ -139,7 +142,7 @@ class Model:
     
     def add_arc(self, vessel_number, departure_order, destination_order, start_node_time, finish_node_time, sailing_consumption, idling_consumption, servicing_consumption):
 
-        vessel = d.get_vessel_by_number(vessel_number)
+        vessel = self.vessels[vessel_number]
 
         if finish_node_time < vessel.return_day * 24 * self.multiplier:
 
